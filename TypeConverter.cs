@@ -9,6 +9,9 @@ namespace PublicDomain
     /// <summary>
     /// Performs type conversions using every standard provided by the .NET library.
     /// </summary>
+    /// <remarks>
+    /// Obtained from https://github.com/aaubry/PublicDomain/blob/master/TypeConverter.cs
+    /// </remarks>
     public static class TypeConverter
     {
         /// <summary>
