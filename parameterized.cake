@@ -1,5 +1,13 @@
 using System.Reflection;
 
+static Dictionary<Tuple<ActionTask, string>, object> DefaultParameterValues = new Dictionary<Tuple<ActionTask, string>, object>();
+
+public static CakeTaskBuilder<ActionTask> HasOptionalParameter(this CakeTaskBuilder<ActionTask> builder, string name, object defaultValue)
+{
+    DefaultParameterValues.Add(Tuple.Create(builder.Task, name), defaultValue);
+    return builder;
+}
+
 public static CakeTaskBuilder<ActionTask> Does<T1>(this CakeTaskBuilder<ActionTask> builder, Action<T1> action)
 {
     return ParameterizedDoes(builder, action);
@@ -29,7 +37,10 @@ public static CakeTaskBuilder<ActionTask> ParameterizedDoes(CakeTaskBuilder<Acti
 
         for (var i = 0; i < parameters.Length; ++i)
         {
-            arguments[i] = context.Argument(parameters[i].ParameterType, parameters[i].Name);
+            object defaultValue;
+            arguments[i] = DefaultParameterValues.TryGetValue(Tuple.Create(builder.Task, parameters[i].Name), out defaultValue)
+                ? context.Argument(parameters[i].ParameterType, parameters[i].Name, defaultValue)
+                : context.Argument(parameters[i].ParameterType, parameters[i].Name);
         }
 
         try
@@ -80,7 +91,7 @@ private static class ArgumentsHelper
         return context.Argument<T>(name);
     }
 
-    private static T GetArgumentWithDefault<T>(ICakeContext context, string name, T defaultValue)
+    public static T GetArgumentWithDefault<T>(ICakeContext context, string name, T defaultValue)
     {
         return context.Argument<T>(name, defaultValue);
     }
